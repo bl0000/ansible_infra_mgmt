@@ -1,0 +1,22 @@
+---
+
+- name: Get secret from HV Vault
+  hosts: localhost
+
+  tasks:
+    - name: Get Vault secret via API
+      ansible.builtin.uri:
+        url: "{{ ansible_url }}"
+        method: GET
+        headers:
+          X-Vault-Token: "{{ vault_token }}"
+        body: '{"data":{"key":"value"}}'
+        body_format: json
+        return_content: yes
+        validate_certs: false
+      register: response
+
+    - name: Display results
+      ansible.builtin.debug:
+        msg:
+          - "Secret: {{ response.json.data.data['test2']}}"
