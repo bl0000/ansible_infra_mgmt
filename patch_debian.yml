@@ -9,7 +9,6 @@
       debug:
         msg: "{{ item }}"
 
-    tasks:
     - name: Get Vault secret via API
       ansible.builtin.uri:
         url: "{{ vault_url + item }}"
