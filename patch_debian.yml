@@ -7,11 +7,11 @@
   tasks:
     - name: Print hostname (debug)
       debug:
-        msg: "{{ item }}"
+        msg: "{{ inventory_hostname }}"
 
     - name: Get Vault secret via API
       ansible.builtin.uri:
-        url: "{{ vault_url + item }}"
+        url: "{{ vault_url + inventory_hostname }}"
         method: GET
         headers:
           X-Vault-Token: "{{ vault_token }}"
