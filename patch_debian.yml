@@ -5,6 +5,11 @@
   become: yes
 
   tasks:
+    - name: Print hostname (debug)
+      debug:
+        msg: "{{ item }}"
+      loop: "{{ groups['all'] }}"
+
     - name: Perform a dist-upgrade.
       ansible.builtin.apt:
         upgrade: dist
