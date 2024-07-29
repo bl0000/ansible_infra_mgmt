@@ -12,7 +12,7 @@
     tasks:
     - name: Get Vault secret via API
       ansible.builtin.uri:
-        url: "{{ ansible_url }}"
+        url: "{{ vault_url + item }}"
         method: GET
         headers:
           X-Vault-Token: "{{ vault_token }}"
@@ -25,7 +25,7 @@
     - name: Display results
       ansible.builtin.debug:
         msg:
-          - "Secret: {{ response.json.data.data['{{ item }}']}}"
+          - "Secret: {{ response.json.data.data['ansible_user']}}"
 
 
     - name: Perform a dist-upgrade.
