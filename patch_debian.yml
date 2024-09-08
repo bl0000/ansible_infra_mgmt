@@ -14,6 +14,7 @@
         upgrade: dist
         update_cache: yes
         allow_change_held_packages: yes
+        state: latest
 
     - name: Check if a reboot is required.
       ansible.builtin.stat:
