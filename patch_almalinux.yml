@@ -1,0 +1,33 @@
+---
+- name: Perform updates on AlmaLinux, reboot if required
+  hosts: all
+  gather_facts: no
+  become: yes
+
+  tasks:
+    - name: Print hostname (debug)
+      debug:
+        msg: "{{ inventory_hostname }}"
+
+    - name: Perform a system upgrade.
+      ansible.builtin.yum:
+        name: '*'
+        state: latest
+        update_cache: yes
+
+    - name: Check if a reboot is required.
+      ansible.builtin.command:
+        cmd: needs-restarting -r
+        warn: false
+      register: reboot_required_check
+      failed_when: reboot_required_check.rc not in [0, 1]
+
+    - name: Reboot the server (if required).
+      ansible.builtin.reboot:
+      when: reboot_required_check.rc == 1
+
+    - name: Remove dependencies that are no longer required.
+      ansible.builtin.yum:
+        name: '*'
+        state: absent
+        autoremove: yes
