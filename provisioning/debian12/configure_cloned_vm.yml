@@ -27,7 +27,6 @@
         regexp: '^address\s+{{ current_ip }}'
         line: "address {{ server_ip }}"
         state: present
-      when: ansible_default_ipv4.address == current_ip
 
     - name: Perform a dist-upgrade.
       ansible.builtin.apt:
