@@ -1,0 +1,49 @@
+- name: Configure provisioned Debian 12 VM. 
+  hosts: all
+  gather_facts: no
+  become: yes
+
+  tasks:
+    - name: Print hostname (debug)
+      debug:
+        msg: "{{ inventory_hostname }}"
+
+    - name: Change hostname in /etc/hostname
+      ansible.builtin.lineinfile:
+        path: /etc/hostname
+        line: "{{ server_name }}"
+        state: present
+
+    - name: Change hostname in /etc/hosts
+      ansible.builtin.lineinfile:
+        path: /etc/hosts
+        regexp: '^127\.0\.1\.1\s+.*'
+        line: "127.0.1.1 {{ server_name }}"
+        state: present
+
+    - name: Change IP address in /etc/network/interfaces
+      ansible.builtin.lineinfile:
+        path: /etc/network/interfaces
+        regexp: "^{{ current_ip }}\s+.*"
+        line: "address {{ server_ip }}"
+        state: present
+
+    - name: Perform a dist-upgrade.
+      ansible.builtin.apt:
+        upgrade: dist
+        update_cache: yes
+        allow_change_held_packages: yes
+        state: latest
+
+    - name: Remove dependencies that are no longer required.
+      ansible.builtin.apt:
+        autoremove: yes
+
+    - name: Download the sysprep script
+      ansible.builtin.get_url:
+        url: https://raw.githubusercontent.com/bl0000/linux-sysprep/refs/heads/main/deb12_sysprep.sh
+        dest: /tmp/deb12_sysprep.sh
+        mode: '0755'
+
+    - name: Execute the sysprep script
+      ansible.builtin.command: /tmp/deb12_sysprep.sh
