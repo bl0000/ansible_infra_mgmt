@@ -11,21 +11,29 @@
     - name: Change hostname in /etc/hostname
       ansible.builtin.lineinfile:
         path: /etc/hostname
+        regexp: "{{ current_name }}"
         line: "{{ server_name }}"
         state: present
 
     - name: Change hostname in /etc/hosts
       ansible.builtin.lineinfile:
         path: /etc/hosts
-        regexp: '^127\.0\.1\.1\s+.*'
-        line: "127.0.1.1 {{ server_name }}"
+        regexp: "{{ current_name }}"
+        line: "{{ server_name }}"
         state: present
 
     - name: Change IP address in /etc/network/interfaces
       ansible.builtin.lineinfile:
         path: /etc/network/interfaces
-        regexp: '^address\s+{{ current_ip }}'
-        line: "address {{ server_ip }}"
+        regexp: '{{ current_ip }}'
+        line: "{{ server_ip }}"
+        state: present
+
+    - name: Update IP address in /etc/hosts
+      ansible.builtin.lineinfile:
+        path: /etc/hosts
+        regexp: "{{ current_ip }}"
+        line: "{{ server_ip }}"
         state: present
 
     - name: Perform a dist-upgrade.
