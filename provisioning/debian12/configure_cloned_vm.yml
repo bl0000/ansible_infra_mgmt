@@ -9,7 +9,7 @@
         msg: "{{ inventory_hostname }}"
 
     - name: Change hostname in /etc/hostname
-      ansible.builtin.replace:
+      ansible.builtin.lineinfile:
         path: /etc/hostname
         regexp: "{{ current_name }}"
         line: "{{ server_name }}"
