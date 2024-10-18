@@ -19,22 +19,19 @@
       ansible.builtin.lineinfile:
         path: /etc/hosts
         regexp: "{{ current_name }}"
-        line: "{{ server_name }}"
-        state: present
+        replace: "{{ server_name }}"
 
     - name: Change IP address in /etc/network/interfaces
       ansible.builtin.lineinfile:
         path: /etc/network/interfaces
         regexp: '{{ current_ip }}'
-        line: "{{ server_ip }}"
-        state: present
+        replace: "{{ server_ip }}"
 
     - name: Update IP address in /etc/hosts
       ansible.builtin.lineinfile:
         path: /etc/hosts
         regexp: "{{ current_ip }}"
-        line: "{{ server_ip }}"
-        state: present
+        replace: "{{ server_ip }}"
 
     - name: Perform a dist-upgrade.
       ansible.builtin.apt:
@@ -47,11 +44,34 @@
       ansible.builtin.apt:
         autoremove: yes
 
-    - name: Download the sysprep script
-      ansible.builtin.get_url:
-        url: https://raw.githubusercontent.com/bl0000/linux-sysprep/refs/heads/main/deb12_sysprep.sh
-        dest: /tmp/deb12_sysprep.sh
-        mode: '0755'
+    - name: Remove machine-id
+      ansible.builtin.command:
+        cmd: rm /etc/machine-id
+        sudo: true
 
-    - name: Execute the sysprep script
-      ansible.builtin.command: /tmp/deb12_sysprep.sh
+    - name: Regenerate D-Bus machine UUID
+      ansible.builtin.command:
+        cmd: dbus-uuidgen --ensure
+        sudo: true
+
+    - name: Setup systemd machine ID
+      ansible.builtin.command:
+        cmd: systemd-machine-id-setup
+        sudo: true
+
+    - name: Remove old SSH host keys
+      ansible.builtin.file:
+        path: /etc/ssh/ssh_host_*
+        state: absent
+        sudo: true
+
+    - name: Regenerate SSH host keys
+      ansible.builtin.command:
+        cmd: ssh-keygen -A
+        sudo: true
+
+    - name: Reboot the server
+      ansible.builtin.reboot:
+        reboot_timeout: 300
+        msg: "Rebooting the server to apply changes."
+        sudo: true
