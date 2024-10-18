@@ -9,26 +9,26 @@
         msg: "{{ inventory_hostname }}"
 
     - name: Change hostname in /etc/hostname
-      ansible.builtin.lineinfile:
+      ansible.builtin.replace:
         path: /etc/hostname
         regexp: "{{ current_name }}"
         line: "{{ server_name }}"
         state: present
 
     - name: Change hostname in /etc/hosts
-      ansible.builtin.lineinfile:
+      ansible.builtin.replace:
         path: /etc/hosts
         regexp: "{{ current_name }}"
         replace: "{{ server_name }}"
 
     - name: Change IP address in /etc/network/interfaces
-      ansible.builtin.lineinfile:
+      ansible.builtin.replace:
         path: /etc/network/interfaces
         regexp: '{{ current_ip }}'
         replace: "{{ server_ip }}"
 
     - name: Update IP address in /etc/hosts
-      ansible.builtin.lineinfile:
+      ansible.builtin.replace:
         path: /etc/hosts
         regexp: "{{ current_ip }}"
         replace: "{{ server_ip }}"
