@@ -47,31 +47,31 @@
     - name: Remove machine-id
       ansible.builtin.command:
         cmd: rm /etc/machine-id
-        sudo: true
+      become: true
 
     - name: Regenerate D-Bus machine UUID
       ansible.builtin.command:
         cmd: dbus-uuidgen --ensure
-        sudo: true
+      become: true
 
     - name: Setup systemd machine ID
       ansible.builtin.command:
         cmd: systemd-machine-id-setup
-        sudo: true
+      become: true
 
     - name: Remove old SSH host keys
       ansible.builtin.file:
         path: /etc/ssh/ssh_host_*
         state: absent
-        sudo: true
+      become: true
 
     - name: Regenerate SSH host keys
       ansible.builtin.command:
         cmd: ssh-keygen -A
-        sudo: true
+      become: true
 
     - name: Reboot the server
       ansible.builtin.reboot:
         reboot_timeout: 300
         msg: "Rebooting the server to apply changes."
-        sudo: true
+      become: true
