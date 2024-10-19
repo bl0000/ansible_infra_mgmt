@@ -15,4 +15,3 @@
         storage: "{{ proxmox_storage }}"
         format: qcow2
         timeout: 500
-        state: started
