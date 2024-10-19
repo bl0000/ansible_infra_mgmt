@@ -62,7 +62,6 @@
     - name: Remove old SSH host keys
       ansible.builtin.file:
         path: /etc/ssh/ssh_host_*
-        state: absent
       become: true
 
     - name: Regenerate SSH host keys
