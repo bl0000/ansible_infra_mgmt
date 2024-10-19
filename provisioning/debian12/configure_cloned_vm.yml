@@ -60,8 +60,7 @@
       become: true
 
     - name: Remove old SSH host keys
-      ansible.builtin.file:
-        path: /etc/ssh/ssh_host_*
+      ansible.builtin.shell: rm /etc/ssh/ssh_host_*
       become: true
 
     - name: Regenerate SSH host keys
@@ -74,3 +73,8 @@
         reboot_timeout: 300
         msg: "Rebooting the server to apply changes."
       become: true
+      ignore_errors: true # Host is expected to be unreachable after reboot
+
+    - name: End of play due to expected disconnection
+      meta: end_play
+      when: ansible_facts['uptime_seconds'] < 30
