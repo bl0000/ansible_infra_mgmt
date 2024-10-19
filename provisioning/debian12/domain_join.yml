@@ -1,0 +1,10 @@
+- name: Join a Debian 12 VM to an Active Directory domain. 
+  hosts: all
+  gather_facts: no
+  become: yes
+
+  tasks:
+    - name: Discover domain
+      ansible.builtin.command:
+        cmd: realm discover "{{ target_domain }}"
+      become: true
