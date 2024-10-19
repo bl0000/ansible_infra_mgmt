@@ -70,7 +70,7 @@
 
     - name: Reboot the server
       ansible.builtin.reboot:
-        reboot_timeout: 300
+        reboot_timeout: 30
         msg: "Rebooting the server to apply changes."
       become: true
       ignore_errors: true # Host is expected to be unreachable after reboot
