@@ -22,6 +22,7 @@ dependencies:
     urllib3
     jmespath
     kubernetes
+    pexpect
 
   system: |
     python3.11-devel [platform:rpm compile]
