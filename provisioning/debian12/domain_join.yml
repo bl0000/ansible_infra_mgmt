@@ -1,10 +1,110 @@
-- name: Join a Debian 12 VM to an Active Directory domain. 
+- name: Join a Debian 12 VM to an Active Directory domain, configure admin group, disable local auth for SSH and prevent credential caching.
   hosts: all
   gather_facts: no
   become: yes
 
   tasks:
-    - name: Discover domain
-      ansible.builtin.command:
-        cmd: realm discover "{{ target_domain }}"
-      become: true
+    - name: Install required packages for domain joining
+      apt:
+        name:
+          - realmd
+          - sssd
+          - sssd-tools
+          - libnss-sss
+          - libpam-sss
+          - adcli
+          - samba-common-bin
+        state: present
+        update_cache: yes
+
+    - name: Join the domain
+      expect:
+        command: realm join {{ ad_domain }} -U "{{ ad_account }}" --verbose --install=/ --computer-ou="{{ target_ou }}"
+        responses:
+          'Password for .*': "{{ ad_password }}"
+
+    - name: Configure SSH to allow Kerberos auth
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: '^#?KerberosAuthentication.*'
+        line: 'KerberosAuthentication yes'
+        state: present
+
+    - name: Configure SSH to block local authentication
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: '^#?KerberosOrLocalPasswd.*'
+        line: 'KerberosOrLocalPasswd no'
+        state: present
+
+    - name: Configure SSH to cleanup Kerberos tickets
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: '^#?KerberosTicketCleanup.*'
+        line: 'KerberosTicketCleanup yes'
+        state: present
+
+    - name: Configure SSH to cleanup Kerberos tickets
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: '^#?KerberosGetAFSToken.*'
+        line: 'KerberosGetAFSToken yes'
+        state: present
+
+    - name: Configure SSH to cleanup Kerberos tickets
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: '^#?KerberosGetAFSToken.*'
+        line: 'KerberosGetAFSToken yes'
+        state: present
+
+    - name: Configure SSH to block GSSAPI Authentication
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: '^#?GSSAPIAuthentication.*'
+        line: 'GSSAPIAuthentication no'
+        state: present
+
+    - name: Permit AD admin group to access the server
+      command: realm permit -g '{{ ad_admin_group }}@{{ ad_domain }}'
+
+    - name: Configure SSSD to not require FQ names
+      lineinfile:
+        path: /etc/sssd/sssd.conf
+        regexp: '^use_fully_qualified_names.*'
+        line: 'use_fully_qualified_names = False'
+        state: present
+
+    - name: Configure SSSD to not cache krb5 passwords
+      lineinfile:
+        path: /etc/sssd/sssd.conf
+        regexp: '^krb5_store_password_if_offline.*'
+        line: 'krb5_store_password_if_offline = False'
+        state: present
+
+    - name: Configure SSSD to not cache credentials
+      lineinfile:
+        path: /etc/sssd/sssd.conf
+        regexp: '^cache_credentials.*'
+        line: 'cache_credentials = False'
+        state: present
+
+    - name: Enable mkhomedir to create home directories for AD users
+      command: pam-auth-update --enable mkhomedir
+
+    - name: Add AD admin group to sudoers
+      lineinfile:
+        path: /etc/sudoers
+        state: present
+        create: yes
+        line: "%{{ ad_admin_group }} ALL=(ALL:ALL) ALL"
+
+    - name: Restart SSH service
+      service:
+        name: sshd
+        state: restarted
+
+    - name: Restart SSSD
+      service:
+        name: sssd
+        state: restarted
