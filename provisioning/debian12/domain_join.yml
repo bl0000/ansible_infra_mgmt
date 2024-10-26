@@ -45,14 +45,7 @@
         line: 'KerberosTicketCleanup yes'
         state: present
 
-    - name: Configure SSH to cleanup Kerberos tickets
-      lineinfile:
-        path: /etc/ssh/sshd_config
-        regexp: '^#?KerberosGetAFSToken.*'
-        line: 'KerberosGetAFSToken yes'
-        state: present
-
-    - name: Configure SSH to cleanup Kerberos tickets
+    - name: Configure SSH to get AFS token
       lineinfile:
         path: /etc/ssh/sshd_config
         regexp: '^#?KerberosGetAFSToken.*'
