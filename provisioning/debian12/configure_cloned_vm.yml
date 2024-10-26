@@ -75,6 +75,3 @@
       become: true
       ignore_errors: true # Host is expected to be unreachable after reboot
 
-    - name: End of play due to expected disconnection
-      meta: end_play
-      when: ansible_facts['uptime_seconds'] < 30
