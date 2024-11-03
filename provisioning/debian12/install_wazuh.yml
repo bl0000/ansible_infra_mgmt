@@ -4,4 +4,42 @@
   become: yes
 
   tasks:
-    - name: placeholder
+    - name: Download and import Wazuh GPG key
+      command: "curl -s https://packages.wazuh.com/key/GPG-KEY-WAZUH | gpg --no-default-keyring --keyring gnupg-ring:/usr/share/keyrings/wazuh.gpg --import"
+      args:
+        creates: "/usr/share/keyrings/wazuh.gpg"
+      register: gpg_key_import
+
+    - name: Set correct permissions on Wazuh GPG key
+      file:
+        path: "/usr/share/keyrings/wazuh.gpg"
+        mode: '0644'
+      when: gpg_key_import is changed
+
+    - name: Add Wazuh repository
+      lineinfile:
+        path: "/etc/apt/sources.list.d/wazuh.list"
+        line: "deb [signed-by=/usr/share/keyrings/wazuh.gpg] https://packages.wazuh.com/4.x/apt/ stable main"
+        create: yes
+
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+
+    - name: Install Wazuh agent
+      apt:
+        name: wazuh-agent
+        state: present
+        update_cache: yes
+      environment:
+        WAZUH_MANAGER: "{{ wazuh_manager_ip }}"
+
+    - name: Reload systemd manager configuration
+      systemd:
+        daemon_reload: yes
+
+    - name: Enable and start Wazuh agent
+      service:
+        name: wazuh-agent
+        state: started
+        enabled: yes
