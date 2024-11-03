@@ -1,0 +1,7 @@
+- name: Install Wazuh agent and configure to forward events to Wazuh manager
+  hosts: all
+  gather_facts: no
+  become: yes
+
+  tasks:
+    - name: placeholder

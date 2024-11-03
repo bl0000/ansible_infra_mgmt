@@ -1,0 +1,50 @@
+- name: Install Zabbix agent and configure to forward data to Zabbix server in active mode
+  hosts: all
+  gather_facts: no
+  become: yes
+
+  tasks:
+    - name: Get the hostname of the server
+      command: hostname
+      register: server_hostname
+
+    - name: Install required packages for domain joining
+      apt:
+        name:
+          - zabbix-agent
+        state: present
+        update_cache: yes
+
+    - name: Disable passive server
+      lineinfile:
+        path: /etc/zabbix/zabbix_agentd.conf
+        regexp: '^Server=127.0.0.1'
+        line: '#Server=127.0.0.1'
+        state: present
+
+    - name: Set StartAgents to 0
+      lineinfile:
+        path: /etc/zabbix/zabbix_agentd.conf
+        regexp: '^# StartAgents=3'
+        line: 'StartAgents=0'
+        state: present
+
+    - name: Set Active Server to Zabbix Server IP
+      lineinfile:
+        path: /etc/zabbix/zabbix_agentd.conf
+        regexp: '^ServerActive=127.0.0.1'
+        line: 'ServerActive={{ zabbix_server }}'
+        state: present
+
+    - name: Set hostname to server's hostname
+      lineinfile:
+        path: /etc/zabbix/zabbix_agentd.conf
+        regexp: '^# Hostname='
+        line: 'Hostname={{ server_hostname}}'
+        state: present
+
+    - name: Start and enable zabbix_agent service
+      service:
+        name: zabbix_agent
+        state: started
+        enabled: yes
