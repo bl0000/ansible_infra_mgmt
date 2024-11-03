@@ -43,8 +43,8 @@
         line: 'Hostname={{ server_hostname.stdout }}'
         state: present
 
-    - name: Start and enable zabbix-agent service
+    - name: Restart and enable zabbix-agent service
       service:
         name: zabbix-agent.service
-        state: started
+        state: restarted
         enabled: yes
