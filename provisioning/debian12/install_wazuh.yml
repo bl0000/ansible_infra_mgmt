@@ -4,17 +4,21 @@
   become: yes
 
   tasks:
-    - name: Download and import Wazuh GPG key
-      command: "curl -s https://packages.wazuh.com/key/GPG-KEY-WAZUH | gpg --no-default-keyring --keyring gnupg-ring:/usr/share/keyrings/wazuh.gpg --import"
+    - name: Download Wazuh GPG key
+      get_url:
+        url: "https://packages.wazuh.com/key/GPG-KEY-WAZUH"
+        dest: "/tmp/GPG-KEY-WAZUH"
+        mode: '0644'
+
+    - name: Import Wazuh GPG key
+      command: "gpg --no-default-keyring --keyring gnupg-ring:/usr/share/keyrings/wazuh.gpg --import /tmp/GPG-KEY-WAZUH"
       args:
         creates: "/usr/share/keyrings/wazuh.gpg"
-      register: gpg_key_import
 
     - name: Set correct permissions on Wazuh GPG key
       file:
         path: "/usr/share/keyrings/wazuh.gpg"
         mode: '0644'
-      when: gpg_key_import is changed
 
     - name: Add Wazuh repository
       lineinfile:
@@ -43,3 +47,8 @@
         name: wazuh-agent
         state: started
         enabled: yes
+
+    - name: Remove temporary GPG key file
+      file:
+        path: "/tmp/GPG-KEY-WAZUH"
+        state: absent
