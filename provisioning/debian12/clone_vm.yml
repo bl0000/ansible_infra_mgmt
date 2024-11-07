@@ -16,6 +16,19 @@
         format: qcow2
         timeout: 500
 
+    - name: Wait for VM to be created
+      community.general.proxmox_kvm:
+        api_user: "{{ proxmox_username }}"
+        api_password: "{{ proxmox_password }}"
+        api_host: "{{ proxmox_host }}"
+        name: "{{ target_vm }}"
+        node: "{{ proxmox_node }}"
+      register: vm_info
+      until: vm_info is succeeded and vm_info.vmid is defined
+      retries: 30
+      delay: 15
+      timeout: 500
+
     - name: Start cloned VM
       community.general.proxmox_kvm:
         api_user: "{{ proxmox_username }}"
