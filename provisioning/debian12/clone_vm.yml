@@ -18,7 +18,7 @@
 
     - name: Wait for VM to be created
       ansible.builtin.pause:
-        minutes: 1
+        minutes: 1.5
 
     - name: Start cloned VM
       community.general.proxmox_kvm:
