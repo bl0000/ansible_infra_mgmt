@@ -8,14 +8,20 @@
       debug:
         msg: "{{ inventory_hostname }}"
 
-    - name: Change hostname in /etc/hostname - added retries to wait for the cloned VM to be ready
+    - name: Wait for VM to be online
+      ansible.builtin.wait_for:
+        host: "{{ inventory_hostname }}"
+        port: 22
+        timeout: 300
+        state: started
+      delegate_to: localhost
+
+    - name: Change hostname in /etc/hostname
       ansible.builtin.lineinfile:
         path: /etc/hostname
         regexp: "{{ current_name }}"
         line: "{{ server_name }}"
         state: present
-      retries: 5
-      delay: 30
 
     - name: Change hostname in /etc/hosts
       ansible.builtin.replace:
