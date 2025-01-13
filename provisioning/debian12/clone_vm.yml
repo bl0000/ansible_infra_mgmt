@@ -29,3 +29,7 @@
         node: "{{ proxmox_node }}"
         state: started
       when: target_vm is defined
+
+    - name: Wait for VM to start (for following playbooks)
+      ansible.builtin.pause:
+        minutes: 1
